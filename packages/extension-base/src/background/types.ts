@@ -58,8 +58,8 @@ export interface MetadataRequest {
 }
 
 export interface AutoSavedAccount {
-  address: string;
-  seed: string;
+  address?: string;
+  seed?: string;
 }
 
 export interface AutoSavedAccountRedirect {
@@ -78,8 +78,9 @@ export interface SigningRequest {
 export interface RequestSignatures {
   // private/internal requests, i.e. from a popup
   'pri(accounts.cache.flush)': [undefined, void];
-  'pri(accounts.cache.get)': [undefined, AutoSavedAccount | undefined];
+  'pri(accounts.cache.get)': [undefined, AutoSavedAccount];
   'pri(accounts.cache.set)': [AutoSavedAccount, void];
+  'pri(accounts.cache.subscribe)': [null, boolean, AutoSavedAccount];
   'pri(accounts.create.external)': [RequestAccountCreateExternal, boolean];
   'pri(accounts.create.suri)': [RequestAccountCreateSuri, boolean];
   'pri(accounts.edit)': [RequestAccountEdit, boolean];

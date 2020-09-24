@@ -21,8 +21,11 @@ export default function CreateAccount (): React.ReactElement {
   useEffect((): void => {
     getAccountCache()
       .then((cachedAccount) => {
-        if (cachedAccount?.address) {
-          setAccount(cachedAccount);
+        if (cachedAccount?.address && cachedAccount?.seed) {
+          setAccount({
+            address: cachedAccount.address,
+            seed: cachedAccount.seed
+          });
         } else {
           createSeed()
             .then((account) => {

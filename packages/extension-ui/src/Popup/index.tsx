@@ -1,7 +1,7 @@
 // Copyright 2019-2020 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AccountJson, AccountsContext, AuthorizeRequest, MetadataRequest, SigningRequest } from '@polkadot/extension-base/background/types';
+import { AccountJson, AccountsContext, AuthorizeRequest, AutoSavedAccount, MetadataRequest, SigningRequest } from '@polkadot/extension-base/background/types';
 import { SettingsStruct } from '@polkadot/ui-settings/types';
 
 import React, { useEffect, useState } from 'react';
@@ -12,7 +12,7 @@ import { setSS58Format } from '@polkadot/util-crypto';
 import { Loading } from '../components';
 import { AccountContext, ActionContext, AuthorizeReqContext, MediaContext, MetadataReqContext, SettingsContext, SigningReqContext } from '../components/contexts';
 import ToastProvider from '../components/Toast/ToastProvider';
-import { getAccountCache, subscribeAccounts, subscribeAuthorizeRequests, subscribeMetadataRequests, subscribeSigningRequests } from '../messaging';
+import { getAccountCache, subscribeAccounts, subscribeAuthorizeRequests, subscribeCacheAccount, subscribeMetadataRequests, subscribeSigningRequests } from '../messaging';
 import { buildHierarchy } from '../util/buildHierarchy';
 import Accounts from './Accounts';
 import Authorize from './Authorize';
@@ -67,7 +67,7 @@ export default function Popup (): React.ReactElement {
   const [signRequests, setSignRequests] = useState<null | SigningRequest[]>(null);
   const [isWelcomeDone, setWelcomeDone] = useState(false);
   const [settingsCtx, setSettingsCtx] = useState<SettingsStruct>(startSettings);
-  const [abortedAccountCreation, setAbortedAccountCreation] = useState(false);
+  const [cachedAccount, setCachedAccount] = useState<AutoSavedAccount>({});
 
   const _onAction = (to?: string): void => {
     setWelcomeDone(window.localStorage.getItem('welcome_read') === 'ok');
@@ -81,6 +81,7 @@ export default function Popup (): React.ReactElement {
     Promise.all([
       subscribeAccounts(setAccounts),
       subscribeAuthorizeRequests(setAuthRequests),
+      subscribeCacheAccount(setCachedAccount),
       subscribeMetadataRequests(setMetaRequests),
       subscribeSigningRequests(setSignRequests)
     ]).catch(console.error);
@@ -104,14 +105,6 @@ export default function Popup (): React.ReactElement {
       .catch(console.error);
   }, [cameraOn]);
 
-  useEffect(() => {
-    getAccountCache()
-      .then((cachedAccount) => setAbortedAccountCreation(!!cachedAccount?.seed))
-      .catch((e) => console.error(e));
-  }, []);
-
-  console.log('abortedAccountCreation', abortedAccountCreation);
-
   const Root = isWelcomeDone
     ? authRequests && authRequests.length
       ? Authorize
@@ -119,7 +112,7 @@ export default function Popup (): React.ReactElement {
         ? Metadata
         : signRequests && signRequests.length
           ? Signing
-          : abortedAccountCreation
+          : cachedAccount?.address
             ? CreateAccount
             : Accounts
     : Welcome;

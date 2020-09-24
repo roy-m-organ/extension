@@ -13,6 +13,7 @@ import { TypeRegistry } from '@polkadot/types';
 import { KeyringPair, KeyringPair$Meta } from '@polkadot/keyring/types';
 import { assert, isHex, isObject } from '@polkadot/util';
 import { keyExtractSuri, mnemonicGenerate, mnemonicValidate } from '@polkadot/util-crypto';
+import { BehaviorSubject } from 'rxjs';
 
 import State from './State';
 import { createSubscription, unsubscribe } from './subscriptions';
@@ -38,7 +39,8 @@ export default class Extension {
 
   readonly #state: State;
 
-  private cachedAccount: AutoSavedAccount | undefined;
+  private cachedAccount: AutoSavedAccount = {};
+  private cachedAccountSubject: BehaviorSubject<AutoSavedAccount> = new BehaviorSubject<AutoSavedAccount>({});
 
   constructor (state: State) {
     this.#cachedUnlocks = {};
@@ -183,12 +185,14 @@ export default class Extension {
 
   private flushAccountCache (): void {
     console.log('flushing account cache..');
-    this.cachedAccount = undefined;
+    this.cachedAccount = {};
+    this.cachedAccountSubject.next({});
   }
 
   private setAccountCache (account: AutoSavedAccount): void {
     console.log('setting cached account to', account);
     this.cachedAccount = account;
+    this.cachedAccountSubject.next(account);
 
     setTimeout(() => {
       console.log('timeout kicking in');
@@ -200,6 +204,22 @@ export default class Extension {
     console.log('returning cached account to', this.cachedAccount);
 
     return this.cachedAccount;
+  }
+
+  private getAccountCacheSubscribe (id: string, port: chrome.runtime.Port): boolean {
+    console.log('returning cached account to', this.cachedAccount);
+
+    const cb = createSubscription<'pri(accounts.cache.subscribe)'>(id, port);
+    const subscription = this.cachedAccountSubject.subscribe((request: AutoSavedAccount): void =>
+      cb(request)
+    );
+
+    port.onDisconnect.addListener((): void => {
+      unsubscribe(id);
+      subscription.unsubscribe();
+    });
+
+    return true;
   }
 
   private metadataApprove ({ id }: RequestMetadataApprove): boolean {
@@ -467,6 +487,9 @@ export default class Extension {
 
       case 'pri(accounts.cache.get)':
         return this.getAccountCache();
+
+      case 'pri(accounts.cache.subscribe)':
+        return this.getAccountCacheSubscribe(id, port);
 
       case 'pri(accounts.cache.set)':
         return this.setAccountCache(request as AutoSavedAccount);

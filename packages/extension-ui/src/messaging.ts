@@ -129,7 +129,7 @@ export async function setAccountCache (account: AutoSavedAccount): Promise<void>
   return sendMessage('pri(accounts.cache.set)', account);
 }
 
-export async function getAccountCache (): Promise<AutoSavedAccount | undefined> {
+export async function getAccountCache (): Promise<AutoSavedAccount> {
   return sendMessage('pri(accounts.cache.get)');
 }
 
@@ -188,6 +188,10 @@ export async function subscribeAuthorizeRequests (cb: (accounts: AuthorizeReques
 
 export async function subscribeMetadataRequests (cb: (accounts: MetadataRequest[]) => void): Promise<boolean> {
   return sendMessage('pri(metadata.requests)', null, cb);
+}
+
+export async function subscribeCacheAccount (cb: (account: AutoSavedAccount) => void): Promise<boolean> {
+  return sendMessage('pri(accounts.cache.subscribe)', null, cb);
 }
 
 export async function subscribeSigningRequests (cb: (accounts: SigningRequest[]) => void): Promise<boolean> {
