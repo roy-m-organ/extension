@@ -396,6 +396,15 @@ export default class State {
     addMetadata(meta);
   }
 
+  public deleteMetadata (meta: MetadataDef): void {
+    this.#metaStore.all((key, value) => {
+      console.log('key', key);
+      console.log('val', value);
+    });
+    this.#metaStore.remove(meta.genesisHash);
+    // addMetadata(meta);
+  }
+
   public sign (url: string, request: RequestSign, account: AccountJson): Promise<ResponseSigning> {
     const id = getId();
 

@@ -125,6 +125,10 @@ export async function createSeed (length?: SeedLengths, type?: KeypairType): Pro
   return sendMessage('pri(seed.create)', { length, type });
 }
 
+export async function delMetadata (genesisHash: string): Promise<boolean> {
+  return sendMessage('pri(metadata.del)', genesisHash);
+}
+
 export async function getMetadata (genesisHash?: string | null, isPartial = false): Promise<Chain | null> {
   if (!genesisHash) {
     return null;
@@ -133,7 +137,7 @@ export async function getMetadata (genesisHash?: string | null, isPartial = fals
   let request = metadataGets.get(genesisHash);
 
   if (!request) {
-    request = sendMessage('pri(metadata.get)', genesisHash || null);
+    request = sendMessage('pri(metadata.get)', genesisHash);
     metadataGets.set(genesisHash, request);
   }
 

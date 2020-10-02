@@ -3,6 +3,7 @@
 
 import React, { useContext } from 'react';
 import styled from 'styled-components';
+import { delMetadata } from '../../messaging';
 
 import { AccountContext } from '../../components';
 import useTranslation from '../../hooks/useTranslation';
@@ -13,6 +14,10 @@ import AddAccount from './AddAccount';
 export default function Accounts (): React.ReactElement {
   const { t } = useTranslation();
   const { hierarchy } = useContext(AccountContext);
+
+  const _deleteSubMeta = () => {
+    delMetadata('0x0bd72c1c305172e1275278aaeb3f161e02eccb7a819e63f62d47bd53a28189f8').catch((e) => console.error(e));
+  };
 
   return (
     <>
@@ -26,6 +31,8 @@ export default function Accounts (): React.ReactElement {
               text={t<string>('Accounts')}
             />
             <AccountsArea>
+              <div className='link'
+                onClick={_deleteSubMeta}>Delete Subsocial metadata</div>
               {hierarchy.map((json, index): React.ReactNode => (
                 <AccountsTree
                   {...json}
@@ -46,6 +53,10 @@ const AccountsArea = styled.div`
   margin-top: -25px;
   padding-top: 25px;
   scrollbar-width: none;
+
+  .link{
+    cursor: pointer;
+  }
 
   &::-webkit-scrollbar {
     display: none;

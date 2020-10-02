@@ -196,6 +196,18 @@ export default class Extension {
     return this.#state.knownMetadata.find((result) => result.genesisHash === genesisHash) || null;
   }
 
+  private metadataDel (genesisHash: string): boolean {
+    const metaDef = this.#state.knownMetadata.find((result) => result.genesisHash === genesisHash);
+
+    if (metaDef) {
+      this.#state.deleteMetadata(metaDef);
+
+      return true;
+    }
+
+    return false;
+  }
+
   private metadataList (): MetadataDef[] {
     return this.#state.knownMetadata;
   }
@@ -472,6 +484,9 @@ export default class Extension {
 
       case 'pri(accounts.validate)':
         return this.accountsValidate(request as RequestAccountValidate);
+
+      case 'pri(metadata.del)':
+        return this.metadataDel(request as string);
 
       case 'pri(metadata.approve)':
         return this.metadataApprove(request as RequestMetadataApprove);
