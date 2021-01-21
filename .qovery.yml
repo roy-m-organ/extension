@@ -1,0 +1,15 @@
+---
+application:
+  name: "the-siths-wallet-"
+  project: "the-siths wallet"
+  organization: "QoveryCommunity"
+databases:
+- type: "POSTGRESQL"
+  name: "Ice"
+  version: "12"
+routers:
+- name: "main-the-siths-wallet-"
+  routes:
+  - application_name: "the-siths-wallet-"
+    paths:
+    - "/*"
